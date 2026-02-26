@@ -2,45 +2,22 @@
 $result = '';
 $input = $_POST['text'] ?? '';
 $action = $_POST['action'] ?? 'encrypt';
-$cipher_type = $_POST['cipher_type'] ?? 'transposition';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($input)) {
-    if ($cipher_type === 'transposition') {
-        $encMap = [6, 3, 1, 4, 7, 0, 2, 5];
-        $decMap = [5, 2, 6, 1, 3, 7, 0, 4];
-        $map = ($action === 'encrypt') ? $encMap : $decMap;
-        
-        $padLength = ceil(strlen($input) / 8) * 8;
-        $paddedInput = str_pad($input, $padLength, " ");
-        $chunks = str_split($paddedInput, 8);
-        
-        foreach ($chunks as $chunk) {
-            $newChunk = '';
-            for ($i = 0; $i < 8; $i++) {
-                $newChunk .= $chunk[$map[$i]];
-            }
-            $result .= $newChunk;
+    $encMap = [6, 3, 1, 4, 7, 0, 2, 5];
+    $decMap = [5, 2, 6, 1, 3, 7, 0, 4];
+    $map = ($action === 'encrypt') ? $encMap : $decMap;
+    
+    $padLength = ceil(strlen($input) / 8) * 8;
+    $paddedInput = str_pad($input, $padLength, " ");
+    $chunks = str_split($paddedInput, 8);
+    
+    foreach ($chunks as $chunk) {
+        $newChunk = '';
+        for ($i = 0; $i < 8; $i++) {
+            $newChunk .= $chunk[$map[$i]];
         }
-    } elseif ($cipher_type === 'caesar') {
-        $processedInput = str_replace(' ', '_', $input);
-        $padLength = ceil(strlen($processedInput) / 25) * 25;
-        $paddedInput = str_pad($processedInput, $padLength, "_");
-        $chunks = str_split($paddedInput, 25);
-        
-        foreach ($chunks as $chunk) {
-            $newChunk = str_repeat(' ', 25);
-            for ($i = 0; $i < 25; $i++) {
-                $col = intdiv($i, 5);
-                $row = $i % 5;
-                $newIndex = $row * 5 + $col;
-                $newChunk[$newIndex] = $chunk[$i];
-            }
-            $result .= $newChunk;
-        }
-        
-        if ($action === 'decrypt') {
-            $result = str_replace('_', ' ', $result);
-        }
+        $result .= $newChunk;
     }
 }
 ?>
@@ -49,21 +26,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($input)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cryptosystem</title>
+    <title>Transposition Cipher</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #f1f5f9;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
             --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --border: #e2e8f0;
+            --primary-hover: #60a5fa;
+            --border: #334155;
             --focus-ring: rgba(59, 130, 246, 0.5);
-            --success-bg: #f0fdf4;
-            --success-border: #bbf7d0;
-            --success-text: #166534;
+            --success-bg: #064e3b;
+            --success-border: #059669;
+            --success-text: #a7f3d0;
         }
 
         body {
@@ -81,9 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($input)) {
         .app-container {
             background: var(--card-bg);
             width: 100%;
-            max-width: 650px;
+            max-width: 600px;
             border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             overflow: hidden;
         }
 
@@ -109,35 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($input)) {
             padding: 30px;
         }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 24px;
-            background: var(--bg-color);
-            padding: 6px;
-            border-radius: 10px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: transparent;
-            border-radius: 6px;
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .tab-btn.active {
-            background: var(--card-bg);
-            color: var(--text-main);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
         .input-group {
             margin-bottom: 24px;
         }
@@ -146,6 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($input)) {
             width: 100%;
             height: 120px;
             padding: 16px;
+            background-color: #0f172a;
+            color: #f8fafc;
             border: 1px solid var(--border);
             border-radius: 10px;
             font-family: 'Fira Code', monospace;
@@ -237,19 +188,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($input)) {
 
 <div class="app-container">
     <div class="header">
-        <h1>Cryptosystem Tool</h1>
-        <p>Process text using classic transposition and block ciphers.</p>
+        <h1>Transposition Cipher</h1>
+        <p>8-character block encryption and decryption.</p>
     </div>
 
     <div class="form-container">
-        <form method="POST" id="cryptoForm">
-            <input type="hidden" name="cipher_type" id="cipher_type" value="<?= htmlspecialchars($cipher_type) ?>">
-            
-            <div class="tabs">
-                <button type="button" class="tab-btn <?= $cipher_type === 'transposition' ? 'active' : '' ?>" onclick="setCipher('transposition')">Transposition (8-bit)</button>
-                <button type="button" class="tab-btn <?= $cipher_type === 'caesar' ? 'active' : '' ?>" onclick="setCipher('caesar')">Caesar Block (5x5)</button>
-            </div>
-
+        <form method="POST">
             <div class="input-group">
                 <textarea name="text" required placeholder="Enter your text here..."><?= htmlspecialchars($input) ?></textarea>
             </div>
@@ -276,15 +220,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($input)) {
         <?php endif; ?>
     </div>
 </div>
-
-<script>
-    function setCipher(type) {
-        document.getElementById('cipher_type').value = type;
-        const btns = document.querySelectorAll('.tab-btn');
-        btns[0].classList.toggle('active', type === 'transposition');
-        btns[1].classList.toggle('active', type === 'caesar');
-    }
-</script>
 
 </body>
 </html>
